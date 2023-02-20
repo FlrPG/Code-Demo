@@ -77,11 +77,41 @@ public class ConvertUtil {
         return ansList;
     }
 
+    /**
+     * @param sourceList source
+     * @param consumer   void accept(T t)
+     * @param <T>        T
+     */
     public static <T> void foreachIfNonNull(List<T> sourceList, Consumer<T> consumer) {
-
+        if (sourceList == null || sourceList.isEmpty()) {
+            return;
+        }
+        for (T t : sourceList) {
+            if (t != null) {
+                consumer.accept(t);
+            }
+        }
     }
 
-
+    public static <T, K> Map<K, List<T>> group(List<T> target, Function<T, K> keyGenFun) {
+        if (target == null || target.isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<K, List<T>> ansMap = new HashMap<>();
+        for (T t : target) {
+            K k = keyGenFun.apply(t);
+            if (ansMap.containsKey(k)) {
+                List<T> tList = ansMap.get(k);
+                tList.add(t);
+                ansMap.put(k, tList);
+            } else {
+                List<T> tList = new ArrayList<>();
+                tList.add(t);
+                ansMap.put(k, tList);
+            }
+        }
+        return ansMap;
+    }
 
 
     private static List<Person> list;
@@ -100,6 +130,20 @@ public class ConvertUtil {
 
         Map<String, Person> map1 = listToMap(list, Person::getAddress, a -> a.getSalary() > 888);
         System.out.println(map1);
+
+        //foreach test
+        ArrayList<Object> list1 = new ArrayList<>();
+        ArrayList<Object> list2 = new ArrayList<>();
+        foreachIfNonNull(list, person -> {
+            list1.add(person.getName());
+            list2.add(person.getAddress());
+        });
+        System.out.println(list1);
+        System.out.println(list2);
+
+        //group test
+        Map<Object, List<Person>> group = group(list, Person::getAddress);
+        System.out.println(group);
     }
 
 

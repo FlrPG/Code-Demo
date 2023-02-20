@@ -8,6 +8,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MockStream {
@@ -35,6 +36,9 @@ public class MockStream {
                 .filter(person -> person.getAge() > 40) // 过滤出年纪大于40的歌手
                 .map(Person::getName)                   // 拿到他们的名字
                 .collect(Collectors.toList());          // 整理成List<String>
+
+        //group
+        Map<String, List<Person>> collectGroup = list.stream().collect(Collectors.groupingBy(Person::getName));
 
         prettyPrint(collect);
     }

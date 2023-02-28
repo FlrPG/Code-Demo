@@ -11,6 +11,7 @@
     <modules>
         <module>Java-8</module>
         <module>Jave-web</module>
+        <module>Poi-Demo</module>
     </modules>
 
 

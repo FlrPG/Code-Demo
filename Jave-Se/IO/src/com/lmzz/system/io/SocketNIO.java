@@ -9,16 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SocketNIO {
-
     public static void main(String[] args) throws IOException {
-
         List<SocketChannel> clients = new ArrayList<>();
-
         ServerSocketChannel ss = ServerSocketChannel.open();
         ss.bind(new InetSocketAddress(9999));
         ss.configureBlocking(false);
-
-
         while (true) {
             SocketChannel client = ss.accept();
 
@@ -31,7 +26,6 @@ public class SocketNIO {
                 System.out.println("client: " + client.getRemoteAddress());
                 clients.add(client);
             }
-
             ByteBuffer buffer = ByteBuffer.allocate(4096);
             for (SocketChannel channel : clients) {
                 int read = channel.read(buffer);

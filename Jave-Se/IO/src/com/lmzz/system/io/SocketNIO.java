@@ -16,7 +16,7 @@ public class SocketNIO {
 
         ServerSocketChannel ss = ServerSocketChannel.open();
         ss.bind(new InetSocketAddress(9999));
-        ss.configureBlocking(true);
+        ss.configureBlocking(false);
 
 
         while (true) {

@@ -12,6 +12,8 @@
         <module>Java-8</module>
         <module>Jave-web</module>
         <module>Poi-Demo</module>
+        <module>Thread-IO</module>
+        <module>IO</module>
     </modules>
 
 

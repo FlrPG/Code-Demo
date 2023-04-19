@@ -1,9 +1,17 @@
 package com.lmzz.system.io.netty;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -51,6 +59,10 @@ public class MyNetty {
         System.out.println("buf.isDirect()      " + buf.isDirect());
         System.out.println("--------------------");
     }
+    /*
+    nc -l 192.168.208.130 9090
+    nc 192.168.1.204 9090
+     */
 
     /*
     客户端，链接server
@@ -88,6 +100,7 @@ public class MyNetty {
         System.in.read();
     }
 
+    //client demo
     @Test
     public void clientModel() throws IOException, InterruptedException {
         NioEventLoopGroup selector = new NioEventLoopGroup(1);
@@ -97,7 +110,7 @@ public class MyNetty {
 
         //io 事件第一，Rw第二
         ChannelPipeline pipeline = client.pipeline();
-        pipeline.addLast(new AcceptHandle());
+        pipeline.addLast(new AcceptInHandle());
 
         ChannelFuture connect = client.connect(new InetSocketAddress("192.168.208.130", 9090));
         ChannelFuture sync = connect.sync();
@@ -108,28 +121,70 @@ public class MyNetty {
 
         sync.channel().closeFuture().sync();
         System.out.println("client end....");
-
     }
 
-    /*
-    服务端：server
-     */
+    //netty client
+    @Test
+    public void nettyClient() throws InterruptedException {
+        NioEventLoopGroup group = new NioEventLoopGroup(1);
+        Bootstrap bs = new Bootstrap();
+        ChannelFuture future = bs.group(group)
+                .channel(NioSocketChannel.class)
+//                .handler(new InnerHandle())
+                .handler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline().addLast(new AcceptInHandle());
+                    }
+                })
+                .connect(new InetSocketAddress("192.168.208.130", 9090));
+        Channel client = future.sync().channel();
+        ByteBuf buf = Unpooled.copiedBuffer("testClient".getBytes());
+        ChannelFuture write = client.writeAndFlush(buf);
+        write.sync();
+
+        client.closeFuture().sync();
+        System.out.println("client end....");
+    }
+
+
+    //server demo
     @Test
     public void serverModel() throws InterruptedException {
         NioEventLoopGroup selector = new NioEventLoopGroup(1);
-
         //192.168.1.204
         NioServerSocketChannel server = new NioServerSocketChannel();
-        ChannelPipeline p = server.pipeline();
-        p.addLast(new MyAcceptHandle(selector, new AcceptHandle()));//接收 client ，注册client
         selector.register(server);
 
-        ChannelFuture future = server.bind(new InetSocketAddress("192.168.1.204", 9090));
+        ChannelPipeline p = server.pipeline();
+        //p.addLast(new MyAcceptHandle(selector, new AcceptInHandle()));//接收 client ，注册client
+        //封装 InnerHandle 包装 MyInHandle，用中间类防止自定义实现要单利
+        p.addLast(new MyAcceptHandle(selector, new InnerHandle()));//接收 client ，注册client
 
+        ChannelFuture future = server.bind(new InetSocketAddress("192.168.1.204", 9090));
         future.sync().channel().closeFuture().sync();
         System.out.println("server close....");
     }
+
+    //netty server
+    @Test
+    public void nettyServer() throws InterruptedException {
+        NioEventLoopGroup group = new NioEventLoopGroup(1);
+        ServerBootstrap sbs = new ServerBootstrap();
+        ChannelFuture future = sbs.group(group)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline().addLast(new AcceptInHandle());
+                    }
+                })
+                .bind(new InetSocketAddress("192.168.1.204", 9090));
+        future.sync().channel().closeFuture().sync();
+    }
 }
+
+//----------------------- inner class ----------
 
 class MyAcceptHandle extends ChannelInboundHandlerAdapter {
     private final NioEventLoopGroup selector;
@@ -149,23 +204,35 @@ class MyAcceptHandle extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         SocketChannel client = (SocketChannel) msg;//accept ？ netty做了直接返回client
         //1. 注册
-        selector.register(client);
         //2. 响应式 R,W
-        ChannelPipeline p = client.pipeline();
+        ChannelPipeline p = client.pipeline();//add [InnerHandle]
         p.addLast(handler);
+        selector.register(client);
     }
 }
 
-class AcceptHandle extends ChannelInboundHandlerAdapter {
+@ChannelHandler.Sharable
+class InnerHandle extends ChannelInboundHandlerAdapter {
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        Channel client = ctx.channel();
+        ChannelPipeline p = client.pipeline();
+        p.addLast(new AcceptInHandle()); //add [InnerHandle,AcceptInHandle]
+        ctx.pipeline().remove(this);// [AcceptInHandle]
+    }
+}
+
+//@ChannelHandler.Sharable
+class AcceptInHandle extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("register..");
+        System.out.println("client register..");
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("active....");
+        System.out.println("client active....");
     }
 
     @Override

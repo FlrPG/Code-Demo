@@ -102,7 +102,7 @@ public class MyNetty {
 
     //client demo
     @Test
-    public void clientModel() throws IOException, InterruptedException {
+    public void clientModel() throws InterruptedException {
         NioEventLoopGroup selector = new NioEventLoopGroup(1);
 
         NioSocketChannel client = new NioSocketChannel();
@@ -133,7 +133,7 @@ public class MyNetty {
 //                .handler(new InnerHandle())
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
+                    protected void initChannel(SocketChannel ch) {
                         ch.pipeline().addLast(new AcceptInHandle());
                     }
                 })
@@ -196,12 +196,12 @@ class MyAcceptHandle extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+    public void channelRegistered(ChannelHandlerContext ctx) {
         System.out.println("server register..");
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         SocketChannel client = (SocketChannel) msg;//accept ？ netty做了直接返回client
         //1. 注册
         //2. 响应式 R,W
@@ -211,10 +211,11 @@ class MyAcceptHandle extends ChannelInboundHandlerAdapter {
     }
 }
 
+
 @ChannelHandler.Sharable
 class InnerHandle extends ChannelInboundHandlerAdapter {
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+    public void channelRegistered(ChannelHandlerContext ctx) {
         Channel client = ctx.channel();
         ChannelPipeline p = client.pipeline();
         p.addLast(new AcceptInHandle()); //add [InnerHandle,AcceptInHandle]
@@ -226,17 +227,17 @@ class InnerHandle extends ChannelInboundHandlerAdapter {
 class AcceptInHandle extends ChannelInboundHandlerAdapter {
 
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+    public void channelRegistered(ChannelHandlerContext ctx) {
         System.out.println("client register..");
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         System.out.println("client active....");
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
 //        CharSequence str = buf.readCharSequence(buf.readableBytes(), CharsetUtil.UTF_8);
         CharSequence str = buf.getCharSequence(0, buf.readableBytes(), CharsetUtil.UTF_8);

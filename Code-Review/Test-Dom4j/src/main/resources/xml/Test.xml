@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DATASETS>
+  <DATASET>
+    <CONTROL>
+      <CONTTYPE>2</CONTTYPE>
+      <TEMPLATE />
+      <PRINTER />
+      <DISPLAY />
+      <SaleChnl>01</SaleChnl>
+      <MainRiskType />
+      <ProxyPrintAgent />
+    </CONTROL>
+  </DATASET>
+</DATASETS>

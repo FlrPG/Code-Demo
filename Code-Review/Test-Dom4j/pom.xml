@@ -40,6 +40,13 @@
             <artifactId>hutool-all</artifactId>
             <version>5.8.15</version>
         </dependency>
+        <!--UI界面自动化，访问localhost:8088 即可交互式生成代码工具-->
+        <dependency>
+            <groupId>com.github.davidfantasy</groupId>
+            <artifactId>mybatis-plus-generator-ui</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>

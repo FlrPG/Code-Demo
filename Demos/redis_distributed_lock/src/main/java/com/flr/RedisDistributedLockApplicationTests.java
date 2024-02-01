@@ -1,16 +1,17 @@
 package com.flr;
 
 import com.flr.consts.RedisKeyConst;
-import com.flr.service.RedisService;
 import com.flr.pojo.ResumeCollectionDTO;
+import com.flr.service.RedisService;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class RedisDistributedLockApplicationTests {
+import javax.annotation.Resource;
 
-    @Autowired
+@SpringBootTest
+public class RedisDistributedLockApplicationTests {
+
+    @Resource
     private RedisService redisService;
 
     /**
@@ -18,7 +19,7 @@ class RedisDistributedLockApplicationTests {
      * 观察RedisMessageQueueConsumer的处理方式
      */
     @Test
-    void contextLoads() {
+    public void contextLoads() {
         ResumeCollectionDTO resumeCollectionDTO = new ResumeCollectionDTO();
         resumeCollectionDTO.setId(666L);
         resumeCollectionDTO.setAsyncPredictId(777L);

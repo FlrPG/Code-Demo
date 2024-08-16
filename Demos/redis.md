@@ -64,3 +64,5 @@ GenericJackson2JsonRedisSerializer 与 Jackson2JsonRedisSerializer 区别
 ```
 
 发布订阅
+消息队列
+分布式锁

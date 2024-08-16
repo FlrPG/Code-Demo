@@ -2,12 +2,16 @@ package com.flr;
 
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.flr.domain.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 @SpringBootTest(classes = RedisApplication.class)
@@ -249,15 +253,33 @@ public class RedisSerializableTest {
         String genericJackson2_DOUBLE = "genericJackson2_Double";
 
         //序列化 Long 类型和反序列化 Long 类型
-        genericJackson2RedisTemplate.opsForValue().set(genericJackson2_LONG, 10L);
+        genericJackson2RedisTemplate.opsForValue().set(genericJackson2_LONG, 10121313131311L);
         long austin = Long.parseLong(String.valueOf(genericJackson2RedisTemplate.opsForValue().get(genericJackson2_LONG)));
         System.out.println("stringGet: " + austin);
 
-        genericJackson2RedisTemplate.opsForValue().set(genericJackson2_DOUBLE, 10.11d);
+        genericJackson2RedisTemplate.opsForValue().set(genericJackson2_DOUBLE, 10.119324214141241d);
         Double austin2 = (Double) (genericJackson2RedisTemplate.opsForValue().get(genericJackson2_DOUBLE));
         System.out.println("stringGet: " + austin2);
 
 
     }
 
+    /** 测试 Hash 操作 */
+    @Test
+    public void testGenericHash() {
+        genericJackson2RedisTemplate.opsForHash().put("KEY","FIELD","test2");
+        genericJackson2RedisTemplate.opsForHash().put("KEY","FIELD1","test1");
+        genericJackson2RedisTemplate.opsForHash().put("KEY","FIELD2","test1");
+
+        Set<Object> key = genericJackson2RedisTemplate.opsForHash().keys("KEY");
+        System.out.println(JSONUtil.toJsonStr(key));
+
+        Map<Object, Object> entries = genericJackson2RedisTemplate.opsForHash().entries("KEY");
+        System.out.println(JSONUtil.toJsonStr(entries));
+
+        List<Object> values = genericJackson2RedisTemplate.opsForHash().values("KEY");
+        System.out.println(JSONUtil.toJsonStr(values));
+
+    }
 }
+

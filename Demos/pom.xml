@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>Redis-Test</module>
+        <module>flyway-test</module>
     </modules>
     <!--    <modules>-->
 <!--        <module>redis_distributed_lock</module>-->
